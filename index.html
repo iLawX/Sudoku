@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sudoku</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="sudoku-wrapper">
+      <div class="game-info">
+        <div class="game-ref-start">
+          <div class="difficulty-menu">
+            <span>Difficulty:</span>
+            <select class="difficulty-menu-select">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+              <option value="expert">Expert</option>
+              <option value="master">Master</option>
+              <option value="extreme">Extreme</option>
+            </select>
+          </div>
+        </div>
+        <div class="game-stats">
+          <div class="mistakes-counter">
+            Mistakes:
+            <span class="mistakes-counter-info">0 / 3</span>
+          </div>
+          <div class="score">
+            Score:
+            <span class="score-value">0</span>
+          </div>
+          <div class="timer-wrapper">
+            <div class="timer">00:00</div>
+            <i class="fa-solid fa-pause pause active"></i>
+            <i class="fa-solid fa-play play"></i>
+          </div>
+        </div>
+      </div>
+      <div class="game-wrapper">
+        <div class="game">
+          <div class="box">
+            <div class="cell" id="A-1"></div>
+            <div class="cell" id="B-1"></div>
+            <div class="cell" id="C-1"></div>
+            <div class="cell" id="A-2"></div>
+            <div class="cell" id="B-2"></div>
+            <div class="cell" id="C-2"></div>
+            <div class="cell" id="A-3"></div>
+            <div class="cell" id="B-3"></div>
+            <div class="cell" id="C-3"></div>
+          </div>
+          <div class="box">
+            <div class="cell" id="D-1"></div>
+            <div class="cell" id="E-1"></div>
+            <div class="cell" id="F-1"></div>
+            <div class="cell" id="D-2"></div>
+            <div class="cell" id="E-2"></div>
+            <div class="cell" id="F-2"></div>
+            <div class="cell" id="D-3"></div>
+            <div class="cell" id="E-3"></div>
+            <div class="cell" id="F-3"></div>
+          </div>
+          <div class="box">
+            <div class="cell" id="G-1"></div>
+            <div class="cell" id="H-1"></div>
+            <div class="cell" id="I-1"></div>
+            <div class="cell" id="G-2"></div>
+            <div class="cell" id="H-2"></div>
+            <div class="cell" id="I-2"></div>
+            <div class="cell" id="G-3"></div>
+            <div class="cell" id="H-3"></div>
+            <div class="cell" id="I-3"></div>
+          </div>
+          <div class="box">
+            <div class="cell" id="A-4"></div>
+            <div class="cell" id="B-4"></div>
+            <div class="cell" id="C-4"></div>
+            <div class="cell" id="A-5"></div>
+            <div class="cell" id="B-5"></div>
+            <div class="cell" id="C-5"></div>
+            <div class="cell" id="A-6"></div>
+            <div class="cell" id="B-6"></div>
+            <div class="cell" id="C-6"></div>
+          </div>
+          <div class="box">
+            <div class="cell" id="D-4"></div>
+            <div class="cell" id="E-4"></div>
+            <div class="cell" id="F-4"></div>
+            <div class="cell" id="D-5"></div>
+            <div class="cell" id="E-5"></div>
+            <div class="cell" id="F-5"></div>
+            <div class="cell" id="D-6"></div>
+            <div class="cell" id="E-6"></div>
+            <div class="cell" id="F-6"></div>
+          </div>
+          <div class="box">
+            <div class="cell" id="G-4"></div>
+            <div class="cell" id="H-4"></div>
+            <div class="cell" id="I-4"></div>
+            <div class="cell" id="G-5"></div>
+            <div class="cell" id="H-5"></div>
+            <div class="cell" id="I-5"></div>
+            <div class="cell" id="G-6"></div>
+            <div class="cell" id="H-6"></div>
+            <div class="cell" id="I-6"></div>
+          </div>
+          <div class="box">
+            <div class="cell" id="A-7"></div>
+            <div class="cell" id="B-7"></div>
+            <div class="cell" id="C-7"></div>
+            <div class="cell" id="A-8"></div>
+            <div class="cell" id="B-8"></div>
+            <div class="cell" id="C-8"></div>
+            <div class="cell" id="A-9"></div>
+            <div class="cell" id="B-9"></div>
+            <div class="cell" id="C-9"></div>
+          </div>
+          <div class="box">
+            <div class="cell" id="D-7"></div>
+            <div class="cell" id="E-7"></div>
+            <div class="cell" id="F-7"></div>
+            <div class="cell" id="D-8"></div>
+            <div class="cell" id="E-8"></div>
+            <div class="cell" id="F-8"></div>
+            <div class="cell" id="D-9"></div>
+            <div class="cell" id="E-9"></div>
+            <div class="cell" id="F-9"></div>
+          </div>
+          <div class="box">
+            <div class="cell" id="G-7"></div>
+            <div class="cell" id="H-7"></div>
+            <div class="cell" id="I-7"></div>
+            <div class="cell" id="G-8"></div>
+            <div class="cell" id="H-8"></div>
+            <div class="cell" id="I-8"></div>
+            <div class="cell" id="G-9"></div>
+            <div class="cell" id="H-9"></div>
+            <div class="cell" id="I-9"></div>
+          </div>
+        </div>
+        <div class="game-controls-wrapper">
+          <div class="game-controls">
+            <div class="game-controls-item undo">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span class="game-controls-label">Undo</span>
+            </div>
+            <div class="game-controls-item eraser">
+              <i class="fa-solid fa-eraser"></i>
+              <span class="game-controls-label">Erase</span>
+            </div>
+            <div class="game-controls-item hint">
+              <span class="game-controls-hint-label">3</span>
+              <i class="fa-regular fa-lightbulb"></i>
+              <span class="game-controls-label">Hint</span>
+            </div>
+          </div>
+          <div class="numpad">
+            <button class="num">1</button>
+            <button class="num">2</button>
+            <button class="num">3</button>
+            <button class="num">4</button>
+            <button class="num">5</button>
+            <button class="num">6</button>
+            <button class="num">7</button>
+            <button class="num">8</button>
+            <button class="num">9</button>
+          </div>
+          <button class="new-game-button">New Game</button>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
