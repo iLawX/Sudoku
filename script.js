@@ -1,6 +1,15 @@
+const sudoku = document.querySelector(".sudoku-wrapper");
 const game = document.querySelector(".game");
 const cells = document.querySelectorAll(".cell");
 const numPad = document.querySelector(".numpad");
+const mistakesCounter = document.querySelector(".mistakes-counter-info");
+const eraseButton = document.querySelector(".eraser i");
+const notesButton = document.querySelector(".notes i");
+const notesButtonLabel = document.querySelector(".game-controls-notes-label");
+const timerContainer = document.querySelector(".timer");
+
+let timer = 0;
+let timerCounter;
 
 const gameConfig = {
   easy: 43,
@@ -9,6 +18,8 @@ const gameConfig = {
   expert: 56,
   master: 57,
   extreme: 58,
+  totalMistakes: 3,
+  mistakes: 0,
   remainingCells: 81,
 };
 
@@ -21,6 +32,7 @@ const setGame = async (mode) => {
   const sudokus = await getSodoku("sudoku.json");
   const sudoku = sudokus[Math.floor(Math.random() * sudokus.length)];
   setRandomValues(sudoku, mode);
+  timerInterval();
   numPad.addEventListener("click", (e) => {
     checkNumber(e, sudoku);
   });
@@ -69,164 +81,166 @@ const checkNumber = (e, sudoku) => {
   const num = target.textContent;
   const selectedCell = document.querySelector(".selected");
   const cellIndex = Array.from(cells).indexOf(selectedCell);
+  const [column, row] = selectedCell.id.split("-");
+  const relatedCells = [
+    ...document.querySelectorAll(`[id*="${column}"]`),
+    ...document.querySelectorAll(`[id*="${row}"]`),
+    ...selectedCell.parentElement.querySelectorAll(".cell"),
+  ];
   if (selectedCell.hasAttribute("disabled")) return;
-  if (selectedCell.textContent !== num) {
+  // if selected cell equal to the clicked num
+  if (selectedCell.textContent === num) {
+    // if it's correct we add to the remaining cells;
+    if (selectedCell.classList.contains("correct")) {
+      gameConfig.remainingCells++;
+      selectedCell.classList.remove("wrong");
+      console.log(gameConfig.remainingCells);
+    } else {
+      relatedCells.forEach(
+        (cell) =>
+          cell.textContent === num &&
+          cell.classList.contains("wrong") &&
+          cell.classList.remove("wrong")
+      );
+    }
+    // remove chosen from cells
+    cells.forEach((cell) => cell.classList.remove("chosen"));
+    // then empty the selected cell
+    selectedCell.textContent = "";
+    // if selected cell not equal to the clicked num
+  } else {
+    // If the cell has number
     if (selectedCell.textContent) {
-      if (num == sudoku[cellIndex]) {
-        const [column, row] = selectedCell.id.split("-");
-        const relatedCells = [
-          ...document.querySelectorAll(`[id*="${column}"]`), // Column
-          ...document.querySelectorAll(`[id*="${row}"]`), // Row
-          ...selectedCell.parentElement.querySelectorAll(".cell"), // Box
-        ];
-        relatedCells.forEach(
-          (cell) =>
-            cell.textContent === selectedCell.textContent &&
-            cell.classList.remove("wrong")
-        );
-        selectedCell.textContent = num;
+      // If the cell number is correct
+      if (selectedCell.textContent == sudoku[cellIndex]) {
+        addMistake();
+        gameConfig.remainingCells++;
+        selectedCell.classList.remove("correct");
+        selectedCell.classList.add("wrong");
         cells.forEach((cell) => cell.classList.remove("chosen"));
         cells.forEach(
-          (cell) =>
-            cell.textContent === selectedCell.textContent &&
-            cell.classList.add("chosen")
+          (cell) => cell.textContent === num && cell.classList.add("chosen")
         );
-        gameConfig.remainingCells--;
-      } else {
-        cells.forEach((cell) => cell.classList.remove("active"));
-        const [column, row] = selectedCell.id.split("-");
-        const relatedCells = [
-          ...document.querySelectorAll(`[id*="${column}"]`), // Column
-          ...document.querySelectorAll(`[id*="${row}"]`), // Row
-          ...selectedCell.parentElement.querySelectorAll(".cell"), // Box
-        ];
-        selectedCell.textContent = num;
         relatedCells.forEach(
-          (cell) =>
-            cell.textContent === selectedCell && cell.classList.add("wrong")
+          (cell) => cell.textContent === num && cell.classList.add("wrong")
         );
-        cells.forEach(
-          (cell) =>
-            cell.textContent === selectedCell.textContent &&
-            cell.classList.add("chosen")
-        );
+        selectedCell.textContent = num;
+        // If the cell number is not correct
+      } else {
+        if (num == sudoku[cellIndex]) {
+          gameConfig.remainingCells--;
+          console.log(gameConfig.remainingCells);
+          selectedCell.classList.add("correct");
+          cells.forEach((cell) => cell.classList.remove("chosen"));
+          cells.forEach(
+            (cell) => cell.textContent === num && cell.classList.add("chosen")
+          );
+          relatedCells.forEach(
+            (cell) =>
+              cell.textContent === selectedCell.textContent &&
+              cell.classList.remove("wrong")
+          );
+          relatedCells.forEach(
+            (cell) => cell.textContent === num && cell.classList.add("wrong")
+          );
+          selectedCell.textContent = num;
+        } else {
+          addMistake();
+          selectedCell.classList.add("wrong");
+          relatedCells.forEach(
+            (cell) =>
+              cell.textContent === selectedCell.textContent &&
+              cell.classList.remove("wrong")
+          );
+          cells.forEach((cell) => cell.classList.remove("chosen"));
+          cells.forEach(
+            (cell) => cell.textContent === num && cell.classList.add("chosen")
+          );
+          relatedCells.forEach(
+            (cell) => cell.textContent === num && cell.classList.add("wrong")
+          );
+          selectedCell.textContent = num;
+        }
       }
     } else {
       if (num == sudoku[cellIndex]) {
-        selectedCell.textContent = num;
-        cells.forEach(
-          (cell) =>
-            cell.textContent === selectedCell.textContent &&
-            cell.classList.add("chosen")
-        );
-        selectedCell.classList.add("correct");
         gameConfig.remainingCells--;
-      } else {
-        selectedCell.textContent = num;
-        const [column, row] = selectedCell.id.split("-");
-        const relatedCells = [
-          ...document.querySelectorAll(`[id*="${column}"]`), // Column
-          ...document.querySelectorAll(`[id*="${row}"]`), // Row
-          ...selectedCell.parentElement.querySelectorAll(".cell"), // Box
-        ];
-        relatedCells.forEach(
+        console.log(gameConfig.remainingCells);
+        selectedCell.classList.add("correct");
+        relatedCells.some(
           (cell) =>
-            cell.textContent === selectedCell.textContent &&
-            cell.classList.add("wrong")
+            cell.textContent === num &&
+            cell.classList.contains("wrong") &&
+            selectedCell.classList.add("wrong")
         );
         cells.forEach(
-          (cell) =>
-            cell.textContent === selectedCell.textContent &&
-            cell.classList.add("chosen")
+          (cell) => cell.textContent === num && cell.classList.add("chosen")
         );
+        selectedCell.textContent = num;
+      } else {
+        addMistake();
+        selectedCell.classList.add("wrong");
+        relatedCells.forEach(
+          (cell) => cell.textContent === num && cell.classList.add("wrong")
+        );
+        cells.forEach(
+          (cell) => cell.textContent === num && cell.classList.add("chosen")
+        );
+        selectedCell.textContent = num;
       }
     }
   }
-  // if (selectedCell.textContent) {
-  //   if (selectedCell.textContent == sudoku[cellIndex]) {
-  //     if (selectedCell.textContent !== num) {
-  //       selectedCell.textContent = num;
-  //       gameConfig.remainingCells++;
-  //       cells.forEach((cell) => cell.classList.remove("chosen"));
-  //       const [column, row] = selectedCell.id.split("-");
-  //       const relatedCells = [
-  //         ...document.querySelectorAll(`[id*="${column}"]`), // Column
-  //         ...document.querySelectorAll(`[id*="${row}"]`), // Row
-  //         ...selectedCell.parentElement.querySelectorAll(".cell"), // Box
-  //       ];
-  //       relatedCells.forEach((cell) => {
-  //         if (cell.textContent === selectedCell.textContent)
-  //           cell.classList.add("wrong");
-  //       });
-  //       cells.forEach(
-  //         (cell) =>
-  //           cell.textContent === selectedCell.textContent &&
-  //           cell.classList.add("chosen")
-  //       );
-  //     }
-  //   } else {
-  //     selectedCell.textContent = num;
-  //     if (selectedCell.textContent == sudoku[cellIndex]) {
-  //       gameConfig.remainingCells--;
-  //       cells.forEach((cell) => cell.classList.remove("chosen"));
-  //       cells.forEach(
-  //         (cell) =>
-  //           cell.textContent === selectedCell.textContent &&
-  //           cell.classList.remove("wrong")
-  //       );
-  //       cells.forEach(
-  //         (cell) =>
-  //           cell.textContent === selectedCell.textContent &&
-  //           cell.classList.add("chosen")
-  //       );
-  //     } else {
-  //       cells.forEach((cell) => cell.classList.remove("chosen"));
-  //       const [column, row] = selectedCell.id.split("-");
-  //       const relatedCells = [
-  //         ...document.querySelectorAll(`[id*="${column}"]`), // Column
-  //         ...document.querySelectorAll(`[id*="${row}"]`), // Row
-  //         ...selectedCell.parentElement.querySelectorAll(".cell"), // Box
-  //       ];
-  //       relatedCells.forEach((cell) => {
-  //         if (cell.textContent === selectedCell.textContent)
-  //           cell.classList.add("wrong");
-  //       });
-  //       cells.forEach(
-  //         (cell) =>
-  //           cell.textContent === selectedCell.textContent &&
-  //           cell.classList.add("chosen")
-  //       );
-  //     }
-  //   }
-  // } else {
-  //   selectedCell.textContent = num;
-  //   if (selectedCell.textContent == sudoku[cellIndex]) {
-  //     gameConfig.remainingCells--;
-  //     cells.forEach((cell) => {
-  //       if (cell.textContent === selectedCell.textContent)
-  //         cell.classList.add("chosen");
-  //     });
-  //   } else {
-  //     cells.forEach((cell) => cell.classList.remove("chosen"));
-  //     const [column, row] = selectedCell.id.split("-");
-  //     const relatedCells = [
-  //       ...document.querySelectorAll(`[id*="${column}"]`), // Column
-  //       ...document.querySelectorAll(`[id*="${row}"]`), // Row
-  //       ...selectedCell.parentElement.querySelectorAll(".cell"), // Box
-  //     ];
-  //     relatedCells.forEach((cell) => {
-  //       if (cell.textContent === selectedCell.textContent)
-  //         cell.classList.add("wrong");
-  //     });
-  //     cells.forEach(
-  //       (cell) =>
-  //         cell.textContent === selectedCell.textContent &&
-  //         cell.classList.add("chosen")
-  //     );
-  //   }
-  // }
 };
-setTimeout(() => {
-  console.log(gameConfig.remainingCells);
-}, 10000);
+const addMistake = () => {
+  gameConfig.mistakes++;
+  mistakesCounter.textContent = `${gameConfig.mistakes} / ${gameConfig.totalMistakes}`;
+  if (gameConfig.mistakes === gameConfig.totalMistakes) {
+    console.log("Finish");
+  }
+};
+
+const timerInterval = () => {
+  timerCounter = setInterval(() => {
+    const minutes = Math.trunc(timer / 60);
+    const seconds = Math.trunc(timer % 60);
+    timerContainer.textContent = `${minutes < 10 ? `0${minutes}` : minutes}:${
+      seconds < 10 ? `0${seconds}` : seconds
+    }`;
+    timer++;
+  }, 1000);
+};
+
+const erase = () => {
+  const selectedCell = document.querySelector(".selected");
+  if (!selectedCell) return;
+  if (selectedCell.classList.contains("correct")) {
+    gameConfig.remainingCells++;
+    console.log(gameConfig.remainingCells);
+    cells.forEach((cell) => cell.classList.remove("chosen"));
+    selectedCell.textContent = "";
+  } else {
+    const [column, row] = selectedCell.id.split("-");
+    const relatedCells = [
+      ...document.querySelectorAll(`[id *= "${column}"]`),
+      ...document.querySelectorAll(`[id *= "${row}"]`),
+      ...selectedCell.parentElement.querySelectorAll(".cell"),
+    ];
+    relatedCells.forEach((cell) => cell.classList.remove("wrong"));
+    cells.forEach((cell) => cell.classList.remove("chosen"));
+    selectedCell.textContent = "";
+  }
+};
+
+notesButton.addEventListener("click", () => {
+  if (!sudoku.classList.contains("pencil-mode")) {
+    sudoku.classList.add("pencil-mode");
+    notesButtonLabel.textContent = `ON`;
+  } else {
+    sudoku.classList.remove("pencil-mode");
+    notesButtonLabel.textContent = `OFF`;
+  }
+});
+
+eraseButton.addEventListener("click", erase);
+
 setGame("easy");
